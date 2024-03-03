@@ -9,17 +9,14 @@ import (
 )
 
 func main() {
-	source := flag.String("s", "", "Source")
-	destination := flag.String("o", "", "Destination")
-	flag.Parse()
-	fmt.Println("Source:", *source)
-	fmt.Println("Destination:", *destination)
-	if isFolderExist(*source) && isFolderExist(*destination) {
-		files := getListFiles(*source)
+	source, destination := inputFlag()
+	fmt.Println("Moving files from `", source, "` to `", destination, "`")
+	if isFolderExist(source) && isFolderExist(destination) {
+		files := getListFiles(source)
 		for _, file := range files {
 			re := regexp.MustCompile(`.*\\|.*\/`)
 			fileName := re.ReplaceAllString(file, "")
-			dateFolder := *destination + "/" + getFileDate(file)
+			dateFolder := destination + "/" + getFileDate(file)
 			destinationFile := dateFolder + "/" + fileName
 			for isFileExist(destinationFile) {
 				re := regexp.MustCompile(`(.+?)(\.[^.]*$|$)`)
@@ -30,8 +27,27 @@ func main() {
 			moveFile(file, destinationFile)
 		}
 	} else {
-		fmt.Println("error")
+		fmt.Println("Folder not found!")
 	}
+}
+
+func inputFlag() (string, string) {
+	source := flag.String("s", "", "Source folder")
+	destination := flag.String("d", "", "Destination folder")
+	flag.Parse()
+	if *source == "" || *destination == "" {
+		*source, *destination = inputManual()
+	}
+	return *source, *destination
+}
+
+func inputManual() (string, string) {
+	var source, destination string
+	fmt.Print("Enter source folder: ")
+	fmt.Scanln(&source)
+	fmt.Print("Enter destination folder: ")
+	fmt.Scanln(&destination)
+	return source, destination
 }
 
 func isFolderExist(folder string) bool {
